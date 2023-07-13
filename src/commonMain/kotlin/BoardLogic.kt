@@ -37,8 +37,19 @@ object BoardLogic {
      * Set the starting index and the direction if O has won.
      */
     fun hasOWon() {
+        // first check lines and see if they don't return -1
+        val colsCheck = checkCols(TileState.O)
+        val rowsCheck = checkRows(TileState.O)
+        val diagsCheck = checkDiags(TileState.O)
 
-        winLine =  Pair(-1, WinDirection.NONE)
+        winLine = if (colsCheck != -1)
+            Pair(colsCheck, WinDirection.COLUMN)
+        else if (rowsCheck != -1)
+            Pair(rowsCheck, WinDirection.ROW)
+        else if (diagsCheck != -1)
+            Pair(diagsCheck, WinDirection.DIAGONAL)
+        else
+            Pair(-1, WinDirection.NONE)
     }
 
     /**
@@ -46,8 +57,19 @@ object BoardLogic {
      * Sets the starting index and the direction if O has won.
      */
     fun hasXWon() {
+        // first check lines and see if they don't return -1
+        val colsCheck = checkCols(TileState.X)
+        val rowsCheck = checkRows(TileState.X)
+        val diagsCheck = checkDiags(TileState.X)
 
-        winLine =  Pair(-1, WinDirection.NONE)
+        winLine = if (colsCheck != -1)
+            Pair(colsCheck, WinDirection.COLUMN)
+        else if (rowsCheck != -1)
+            Pair(rowsCheck, WinDirection.ROW)
+        else if (diagsCheck != -1)
+            Pair(diagsCheck, WinDirection.DIAGONAL)
+        else
+            Pair(-1, WinDirection.NONE)
     }
 
     /**
@@ -68,6 +90,18 @@ object BoardLogic {
      * For winLine logic, should not pass in EMPTY.
      */
     private fun checkCols(tileState: TileState): Int {
+        // check for tileState being 3 in a row
+        // start by checking top row which are tileState
+
+        for (i in 0..2) {
+            if (tiles[i].state == tileState) {
+                // check other 2 in column being same tileState
+                return if (tiles[i+3].state == tileState && tiles[i+6].state == tileState)
+                    i
+                else
+                    -1
+            }
+        }
 
         return -1
     }
@@ -79,17 +113,42 @@ object BoardLogic {
      * For winLine logic, should not pass in EMPTY.
      */
     private fun checkRows(tileState: TileState): Int {
-
+        for (i in intArrayOf(0, 3, 6)) {
+            if (tiles[i].state == tileState) {
+                // check other 2 in row being same tileState
+                return if (tiles[i+1].state == tileState && tiles[i+2].state == tileState)
+                    i
+                else
+                    -1
+            }
+        }
         return -1
     }
 
     /**
      * Checks the diagonals if any of them have the same tileState.
-     * Returns the starting diagonals index(0, 3) depending on which row has the same tileState.
+     * Returns the starting diagonals index(0, 2) depending on which row has the same tileState.
      * Return -1 if none of them have the same tileState.
      * For winLine logic, should not pass in EMPTY.
      */
     private fun checkDiags(tileState: TileState): Int {
+        // first check index 0 diagonal
+        if (tiles[0].state == tileState) {
+            // check the other 2 in diagonal if same
+            return if (tiles[4].state == tileState && tiles[8].state == tileState)
+                0
+            else
+                -1
+        }
+
+        // check other index 2 diagonal
+        if (tiles[2].state == tileState) {
+            // check other 2 in diagonal if same
+            return if (tiles[4].state == tileState && tiles[6].state == tileState)
+                2
+            else
+                -1
+        }
 
         return -1
     }
