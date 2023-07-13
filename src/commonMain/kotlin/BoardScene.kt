@@ -1,4 +1,5 @@
 import korlibs.image.color.*
+import korlibs.korge.input.*
 import korlibs.korge.view.*
 import korlibs.korge.view.align.*
 import korlibs.math.geom.*
@@ -21,7 +22,7 @@ class BoardScene : SceneBackground() {
         predict behaviour of the game and placement of tile.
          */
 
-        // setup winLine logic
+        // setup board logic
         BoardLogic.initTiles(tiles)
 
         // make a board and place on screen, centered X, a bit lower on the screen
@@ -29,66 +30,61 @@ class BoardScene : SceneBackground() {
         board.positionY(board.y + 50)       // move board a bit lower on the screen from center
         // 50 is an experimental number to move board down by, it was chosen cause it looks good
 
-        tiles[0].onTileStateChanged {
-            if (turn == Turn.X) {
-                // check if X won
-                BoardLogic.hasXWon()
+        // add reset button to clear board and reset board
+        roundRect(Size(50, 50), RectCorners(0)) {
+            // reset image
+            image(resetBitmap)
 
-                // trigger game end event with X being the winner
-                val xWinEvent = GameEndEvent(GameEnd.X)
-
-                BoardLogic.onGameEnd(xWinEvent)
+            onClick {
+                // reset board
+                BoardLogic.resetBoard()
+                // change turn back to X
+                turn = Turn.X
             }
-            else if (turn == Turn.O ) {
-                // check if O won
-                BoardLogic.hasOWon()
+
+            // center on X
+            centerXOnStage()
+        }
+
+        // setup what happens when a tile is changed
+        for (tile in tiles) {
+            tile.onTileStateChanged {
+                if (turn == Turn.X) {
+                    // check if X won
+                    BoardLogic.hasXWon()
+                }
+                else {
+                    // check if O won
+                    BoardLogic.hasOWon()
+                }
+
+                // only check if board is full if no winner
+                if (BoardLogic.winLine.first == -1 && BoardLogic.checkBoardFilled()) {
+                    // board is filled so trigger game end where draw
+                    val drawEvent = GameEndEvent(GameEnd.DRAW)
+
+                    BoardLogic.onGameEnd(drawEvent)
+                }
+
+                else {
+                    // no winner and board is not filled, so change turn
+                    turn = if (turn == Turn.X)
+                        Turn.O
+                    else
+                        Turn.X
+                }
             }
         }
 
 
         BoardLogic.onGameEnd {
             // when game ends
+            // print state game passed
+            println(it.gameEnd)
+
+            // also freeze the board
+            BoardLogic.freezeBoard()
         }
-
-        // a turn made when a tile gets changed
-        // so wait for that, then check winLine logic if someone won
-        // then set flag to false again and do again (assuming no one won)
-        // leave loop if someone won
-
-        // use polling instead of event listeners
-        // might make change later
-//        while (true) {
-//            // only check winLine logic when turn made
-//            if (tileChangedFlag) {
-//                // set flag back to false
-//                tileChangedFlag = false
-//
-//                // check winLine logic depending on whose turn it is
-//                if (turn == Turn.X) {
-//                    if (winLogic.hasXWon().first == -1) {
-//                        // no winner
-//                        // change turn and move to next turn
-//                        turn = Turn.O
-//                        continue
-//                    }
-//
-//                    // X won
-//
-//                }
-//                else {
-//                    if (winLogic.hasXWon().first == -1) {
-//                        // no winner
-//                        // change turn and move to next turn
-//                        turn = Turn.X
-//                        continue
-//                    }
-//
-//                    // O won
-//
-//                }
-//            }
-//        }
-
 
     }
 

@@ -8,6 +8,7 @@ import kotlin.properties.*
 
 var xImgBitmap: Bitmap by Delegates.notNull()
 var oImgBitmap: Bitmap by Delegates.notNull()
+var resetBitmap: Bitmap by Delegates.notNull()
 var font: BitmapFont by Delegates.notNull()
 
 // global variable that tracks whose turn it currently is
@@ -21,6 +22,9 @@ suspend fun main() = Korge(windowSize = Size(512, 512), backgroundColor = Colors
     // read X and O image bitmaps
     xImgBitmap = KR.board.x1.read()
     oImgBitmap = KR.board.o1.read()
+
+    // read reset image
+    resetBitmap = KR.board.reset.read()
 
     // get reference to sceneContainer
     val sceneContainer = sceneContainer()

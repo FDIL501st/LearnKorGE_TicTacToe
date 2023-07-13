@@ -42,6 +42,7 @@ object BoardLogic {
         val rowsCheck = checkRows(TileState.O)
         val diagsCheck = checkDiags(TileState.O)
 
+        // first set winLine
         winLine = if (colsCheck != -1)
             Pair(colsCheck, WinDirection.COLUMN)
         else if (rowsCheck != -1)
@@ -50,6 +51,14 @@ object BoardLogic {
             Pair(diagsCheck, WinDirection.DIAGONAL)
         else
             Pair(-1, WinDirection.NONE)
+
+        // next run logic of what to do in case O has won
+        if (winLine.first != -1) {
+            // trigger x win event
+            val oWinEvent = GameEndEvent(GameEnd.O)
+            onGameEnd(oWinEvent)
+        }
+
     }
 
     /**
@@ -70,14 +79,24 @@ object BoardLogic {
             Pair(diagsCheck, WinDirection.DIAGONAL)
         else
             Pair(-1, WinDirection.NONE)
+
+        // next run logic of what to do in case X has won
+        if (winLine.first != -1) {
+            // trigger x win event
+            val xWinEvent = GameEndEvent(GameEnd.X)
+            onGameEnd(xWinEvent)
+        }
     }
 
     /**
      * Checks if all the tiles are not Empty.
      */
     fun checkBoardFilled(): Boolean {
+        // check all tiles and see if there are any empty tiles
+
+        // finding an empty tile means the board is not filled
         for (tile in tiles) {
-            if (tile.state != TileState.EMPTY)
+            if (tile.state == TileState.EMPTY)
                 return false
         }
         return true
@@ -157,9 +176,19 @@ object BoardLogic {
      * Disables all mouse events in the board.
      * Used to stop the game as board can no longer change.
      */
-    private fun freezeBoard() {
+    fun freezeBoard() {
         for (tile in tiles) {
             tile.tile.mouseEnabled = false
+        }
+    }
+
+    /**
+     * Resets the board back to starting state of it.
+     * This means all tiles are empty and all mouse events are enabled.
+     */
+    fun resetBoard() {
+        for (tile in tiles) {
+            tile.changeState(TileState.EMPTY)
         }
     }
 }
