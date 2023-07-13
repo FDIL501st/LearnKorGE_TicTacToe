@@ -1,6 +1,7 @@
 import korlibs.image.color.*
 import korlibs.korge.input.*
 import korlibs.korge.view.*
+import korlibs.korge.view.Circle
 import korlibs.korge.view.align.*
 import korlibs.math.geom.*
 
@@ -9,7 +10,7 @@ class BoardScene : SceneBackground() {
         // make all tiles and setup winLogic first
 
         // make all 9 tiles
-        val tiles = Array(9) { _ -> Tile(xImgBitmap, oImgBitmap)}
+        val tiles = Array(9) { _ -> Tile(xImgBitmaps, oImgBitmaps)}
 
         // board is made up of 3 x 3 blocks
         /* here is a show of index of tiles and how they will be displayed on screen

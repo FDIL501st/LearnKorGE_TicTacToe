@@ -6,8 +6,8 @@ import korlibs.korge.scene.*
 import korlibs.math.geom.*
 import kotlin.properties.*
 
-var xImgBitmap: Bitmap by Delegates.notNull()
-var oImgBitmap: Bitmap by Delegates.notNull()
+var xImgBitmaps: Array<Bitmap> = emptyArray()
+var oImgBitmaps: Array<Bitmap> = emptyArray()
 var resetBitmap: Bitmap by Delegates.notNull()
 var font: BitmapFont by Delegates.notNull()
 
@@ -19,9 +19,8 @@ suspend fun main() = Korge(windowSize = Size(512, 512), backgroundColor = Colors
     // read font to be used
     font = KR.fonts.latoBlack.__file.readTtfFont().toBitmapFont(300F)
 
-    // read X and O image bitmaps
-    xImgBitmap = KR.board.x1.read()
-    oImgBitmap = KR.board.o1.read()
+    xImgBitmaps = arrayOf(KR.board.x1.read(), KR.board.x2.read(), KR.board.x3.read())
+    oImgBitmaps = arrayOf(KR.board.o1.read(), KR.board.o2.read(), KR.board.o3.read())
 
     // read reset image
     resetBitmap = KR.board.reset.read()
@@ -31,7 +30,6 @@ suspend fun main() = Korge(windowSize = Size(512, 512), backgroundColor = Colors
 
     // add all scenes to injector (so can use sceneContainer to change scenes)
     views.injector.mapPrototype { StartScreen() }
-    views.injector.mapPrototype { tictactoeScene() }
     views.injector.mapPrototype { BoardScene() }
 
     // go to starting scene of the game

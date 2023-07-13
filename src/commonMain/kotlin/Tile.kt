@@ -4,6 +4,7 @@ import korlibs.io.async.*
 import korlibs.korge.input.*
 import kotlinx.coroutines.*
 
+
 // a global flag that get changed to true when a tile state is changed to X or O
 // which means a turn has ended
 
@@ -11,7 +12,7 @@ import kotlinx.coroutines.*
 /**
  * A tile of the board.
  */
-class Tile(xBitMap: Bitmap, oBitMap: Bitmap) {
+class Tile(xBitMaps: Array<Bitmap>, oBitMaps: Array<Bitmap>) {
     // tiles start empty
     var state: TileState = TileState.EMPTY
 
@@ -36,8 +37,10 @@ class Tile(xBitMap: Bitmap, oBitMap: Bitmap) {
         val blank = SolidRect(0, 0).addTo(tile)
         // by default, SolidRect colour is white
 
-        val x = Image(xBitMap).addTo(tile)
-        Image(oBitMap).addTo(tile)
+        // choose a random bitmap for X and O and use it for the
+        // X and O image
+        val x = Image(xBitMaps.random()).addTo(tile)
+        Image(oBitMaps.random()).addTo(tile)
         // use x to give blank proper size
         blank.size(x.size)
 
