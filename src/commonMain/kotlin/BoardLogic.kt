@@ -115,10 +115,8 @@ object BoardLogic {
         for (i in 0..2) {
             if (tiles[i].state == tileState) {
                 // check other 2 in column being same tileState
-                return if (tiles[i+3].state == tileState && tiles[i+6].state == tileState)
-                    i
-                else
-                    -1
+                if (tiles[i+3].state == tileState && tiles[i+6].state == tileState)
+                    return i
             }
         }
 
@@ -135,10 +133,8 @@ object BoardLogic {
         for (i in intArrayOf(0, 3, 6)) {
             if (tiles[i].state == tileState) {
                 // check other 2 in row being same tileState
-                return if (tiles[i+1].state == tileState && tiles[i+2].state == tileState)
-                    i
-                else
-                    -1
+                if (tiles[i+1].state == tileState && tiles[i+2].state == tileState)
+                    return i
             }
         }
         return -1
@@ -154,19 +150,16 @@ object BoardLogic {
         // first check index 0 diagonal
         if (tiles[0].state == tileState) {
             // check the other 2 in diagonal if same
-            return if (tiles[4].state == tileState && tiles[8].state == tileState)
-                0
-            else
-                -1
+            if (tiles[4].state == tileState && tiles[8].state == tileState)
+                return 0
         }
 
         // check other index 2 diagonal
         if (tiles[2].state == tileState) {
             // check other 2 in diagonal if same
-            return if (tiles[4].state == tileState && tiles[6].state == tileState)
-                2
-            else
-                -1
+            if (tiles[4].state == tileState && tiles[6].state == tileState)
+                return 2
+
         }
 
         return -1
