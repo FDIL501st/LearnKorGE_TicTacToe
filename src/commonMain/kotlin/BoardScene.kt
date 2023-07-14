@@ -1,7 +1,6 @@
 import korlibs.image.color.*
 import korlibs.korge.input.*
 import korlibs.korge.view.*
-import korlibs.korge.view.Circle
 import korlibs.korge.view.align.*
 import korlibs.math.geom.*
 
@@ -33,12 +32,18 @@ class BoardScene : SceneBackground() {
 
         // add reset button to clear board and reset board
         roundRect(Size(50, 50), RectCorners(0)) {
+            name = "Reset"
+
             // reset image
             image(resetBitmap)
 
             onClick {
                 // reset board
                 BoardLogic.resetBoard()
+
+                // remove winLine from board
+                board["winLine"].first.removeFromParent()
+
                 // change turn back to X
                 turn = Turn.X
             }
@@ -83,7 +88,15 @@ class BoardScene : SceneBackground() {
             // print state game passed
             println(it.gameEnd)
 
-            // also freeze the board
+            // draw line across 3 in a row (if it exists)
+            when (BoardLogic.winLine.second) {
+                WinDirection.ROW -> drawHorizontalWinLine(board)
+                WinDirection.COLUMN -> drawVerticalWinLine(board)
+                WinDirection.DIAGONAL -> drawDiagonalWinLine(board)
+                else -> { }
+            }
+
+            // freeze the board as game ended
             BoardLogic.freezeBoard()
         }
 
@@ -91,6 +104,7 @@ class BoardScene : SceneBackground() {
 
     private fun makeBoard(tiles: Array<Tile>): Container {
         val board = Container()
+        board.name = "board"
 
         // make 4 lines, used to make our look 3 x 3 by separating the tiles
         // get side length of a tile
@@ -107,33 +121,40 @@ class BoardScene : SceneBackground() {
         // horizontal lines
         val h1 = RoundRect(Size(3*s + 2*lineThickness + 2*extra, lineThickness),
             RectCorners(lineThickness/2), Colors.BLACK)
+        h1.name = "h1"
 
         val h2 = RoundRect(Size(3*s + 2*lineThickness + 2*extra, lineThickness),
             RectCorners(lineThickness/2), Colors.BLACK)
+        h2.name = "h2"
 
         // vertical lines
         val v1 = RoundRect(Size(lineThickness, 3*s + 2*lineThickness + 2*extra),
             RectCorners(lineThickness/2), Colors.BLACK)
+        v1.name = "v1"
 
         val v2 = RoundRect(Size(lineThickness, 3*s + 2*lineThickness + 2*extra),
             RectCorners(lineThickness/2), Colors.BLACK)
+        v2.name = "v2"
 
         // place each part of the board one at a time
 
         // place first tile
         tiles[0].tile.addTo(board)
+        tiles[0].tile.name = "tile0"
 
         // place v1 beside it and move it extra that sticks out (-extra on y-axis)
         v1.addTo(board).alignLeftToRightOf(tiles[0].tile).positionY(v1.y - extra)
 
         // place tiles[1] right of v1
         tiles[1].tile.addTo(board).alignLeftToRightOf(v1)
+        tiles[1].tile.name = "tile1"
 
         // place v2 left of tiles[1], set Y position same as v1
         v2.addTo(board).centerOn(v1).alignLeftToRightOf(tiles[1].tile)
 
         // place tiles[2] right of v2
         tiles[2].tile.addTo(board).alignLeftToRightOf(v2)
+        tiles[2].tile.name = "tile2"
 
         // top row placed, place h1 below it, have extra part poke out (-extra on x-axis)
         h1.addTo(board).alignTopToBottomOf(tiles[0].tile).positionX(h1.x - extra)
@@ -142,6 +163,9 @@ class BoardScene : SceneBackground() {
         tiles[3].tile.addTo(board).alignTopToBottomOf(h1)
         tiles[4].tile.addTo(board).alignTopToBottomOf(h1).alignLeftToRightOf(v1)
         tiles[5].tile.addTo(board).alignTopToBottomOf(h1).alignLeftToRightOf(v2)
+        tiles[3].tile.name = "tile3"
+        tiles[4].tile.name = "tile4"
+        tiles[5].tile.name = "tile5"
 
         // add h2 below row just made
         h2.addTo(board).centerOn(h1).alignTopToBottomOf(tiles[3].tile)
@@ -150,7 +174,90 @@ class BoardScene : SceneBackground() {
         tiles[6].tile.addTo(board).alignTopToBottomOf(h2)
         tiles[7].tile.addTo(board).alignTopToBottomOf(h2).alignLeftToRightOf(v1)
         tiles[8].tile.addTo(board).alignTopToBottomOf(h2).alignLeftToRightOf(v2)
+        tiles[6].tile.name = "tile6"
+        tiles[7].tile.name = "tile7"
+        tiles[8].tile.name = "tile8"
 
         return board
+    }
+
+    /**
+     * Draws the horizontal win line.
+     */
+    private fun drawHorizontalWinLine(board: Container) {
+        // make the horizontal line
+        // just a copy of horizontal line in board
+        val toCopy = board["h1"].first
+        val line = SolidRect(toCopy.size, Colors.BLACK).addTo(board).centerXOn(toCopy)
+        line.name = "winLine"
+
+        // line already centered, just need to move up and down to place on correct row
+        // to do so, just need starting tile of row, then move line to be in middle of its row
+
+        val tile = when (BoardLogic.winLine.first) {
+            0 -> board["tile0"].first       //  top row
+            3 -> board["tile3"].first       //  middle row
+            else -> board["tile6"].first    // bottom row
+        }
+
+        // now to place in middle of the row, center Y on it
+        line.centerYOn(tile)
+    }
+
+    /**
+     * Draws the vertical win line.
+     */
+    private fun drawVerticalWinLine(board: Container) {
+        // make the vertical line
+        // just a copy of vertical line in board
+        val toCopy = board["v1"].first
+        val line = SolidRect(toCopy.size, Colors.BLACK).addTo(board).centerYOn(toCopy)
+        line.name = "winLine"
+
+        // line already centered, just need to move left or right to place on correct column
+        // to do so, just need starting tile of column, then move line to be in middle of its column
+
+        val tile = when (BoardLogic.winLine.first) {
+            0 -> board["tile0"].first       //  left column
+            1 -> board["tile1"].first       //  middle column
+            else -> board["tile2"].first    // right column
+        }
+
+        // now to place in middle of the column, center X on it
+        line.centerXOn(tile)
+    }
+
+    /**
+     * Draws the diagonal win line.
+     */
+    private fun drawDiagonalWinLine(board: Container) {
+        // make the diagonal line
+        // copy horizontal line then rotate it
+        val toCopy = board["h1"].first
+
+        val line = SolidRect(toCopy.size, Colors.BLACK).addTo(board)
+        line.name = "winLine"
+
+        // first figure out starting tile, then place and rotate
+        when (BoardLogic.winLine.first) {
+            //  top left to bottom right
+            0 -> {
+                val tile = board["tile0"].first
+                line.rotation(Angle.fromDegrees(45))
+                // position line to centre of tile
+                line.positionX(tile.x + tile.width/3)
+                line.positionY(tile.y + tile.height/3)
+            }
+
+            // top right to bottom left
+            else -> {
+                val tile = board["tile6"].first
+                line.rotation(Angle.fromDegrees(-45))
+                // position line to centre of tile
+                line.positionX(tile.x + tile.width/3)
+                line.positionY(tile.y + tile.height/3*2)
+            }
+        }
+
     }
 }
