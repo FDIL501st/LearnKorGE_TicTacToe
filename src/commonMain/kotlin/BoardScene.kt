@@ -1,4 +1,5 @@
 import korlibs.image.color.*
+import korlibs.image.text.*
 import korlibs.korge.input.*
 import korlibs.korge.view.*
 import korlibs.korge.view.align.*
@@ -31,11 +32,13 @@ class BoardScene : SceneBackground() {
         // 50 is an experimental number to move board down by, it was chosen cause it looks good
 
         // add reset button to clear board and reset board
-        roundRect(Size(50, 50), RectCorners(0)) {
+        val resetBtn = roundRect(size = resetBitmap.size.toFloat(), radius = RectCorners(5)) {
             name = "Reset"
 
-            // reset image
             image(resetBitmap)
+
+            // center on X
+            centerXOnStage()
 
             onClick {
                 // reset board
@@ -47,9 +50,18 @@ class BoardScene : SceneBackground() {
                 // change turn back to X
                 turn = Turn.X
             }
+        }
 
-            // center on X
-            centerXOnStage()
+        // underneath reset button, have text block that shows whose turn it is or result of game
+        val bg = roundRect(Size(200, 50), RectCorners(0)) {
+            centerXOn(resetBtn)
+            alignTopToBottomOf(resetBtn, padding = 10)
+        }
+
+        // place msg on bg
+        val msg = textBlock(makeMsg("Turn: $turn"), align = TextAlignment.MIDDLE_CENTER) {
+            width = bg.width
+            centerOn(bg)
         }
 
         // setup what happens when a tile is changed
@@ -65,19 +77,25 @@ class BoardScene : SceneBackground() {
                 }
 
                 // only check if board is full if no winner
-                if (BoardLogic.winLine.first == -1 && BoardLogic.checkBoardFilled()) {
-                    // board is filled so trigger game end where draw
-                    val drawEvent = GameEndEvent(GameEnd.DRAW)
+                if (BoardLogic.winLine.first == -1) {
 
-                    BoardLogic.onGameEnd(drawEvent)
-                }
+                    if (BoardLogic.checkBoardFilled()) {
+                        // board is filled so trigger game end where draw
+                        val drawEvent = GameEndEvent(GameEnd.DRAW)
 
-                else {
-                    // no winner and board is not filled, so change turn
-                    turn = if (turn == Turn.X)
-                        Turn.O
-                    else
-                        Turn.X
+                        BoardLogic.onGameEnd(drawEvent)
+                    }
+
+                    // board not full, so change turn
+                    else {
+                        // no winner and board is not filled, so change turn
+                        turn = if (turn == Turn.X)
+                            Turn.O
+                        else
+                            Turn.X
+                        // update turn message
+                        writeTurnMessage(msg)
+                    }
                 }
             }
         }
@@ -90,10 +108,28 @@ class BoardScene : SceneBackground() {
 
             // draw line across 3 in a row (if it exists)
             when (BoardLogic.winLine.second) {
-                WinDirection.ROW -> drawHorizontalWinLine(board)
-                WinDirection.COLUMN -> drawVerticalWinLine(board)
-                WinDirection.DIAGONAL -> drawDiagonalWinLine(board)
-                else -> { }
+                WinDirection.ROW -> {
+                    // draw win line
+                    drawHorizontalWinLine(board)
+                    // write win message
+                    writeWinMessage(msg)
+                }
+                WinDirection.COLUMN ->  {
+                    // draw win line
+                    drawVerticalWinLine(board)
+                    // write win message
+                    writeWinMessage(msg)
+                }
+                WinDirection.DIAGONAL -> {
+                    // draw win line
+                    drawDiagonalWinLine(board)
+                    // write win message
+                    writeWinMessage(msg)
+                }
+                else -> {
+                    // write draw message
+                    writeDrawMessage(msg)
+                }
             }
 
             // freeze the board as game ended
@@ -179,6 +215,32 @@ class BoardScene : SceneBackground() {
         tiles[8].tile.name = "tile8"
 
         return board
+    }
+
+    private fun makeMsg(msg: String): RichTextData {
+        return RichTextData(msg, textSize = 30F, color = Colors.BLACK, font = font)
+    }
+
+    /**
+     * Writes whose turn it is on the msg block.
+     */
+    private fun writeTurnMessage(msgBlock: TextBlock) {
+        msgBlock.text = makeMsg("Turn $turn")
+    }
+
+
+    /**
+     * Writes who won on the msg block.
+     */
+    private fun writeWinMessage(msgBlock: TextBlock) {
+        msgBlock.text = makeMsg("Winner: $turn")
+    }
+
+    /**
+     * Writes draw on msg block.
+     */
+    private fun writeDrawMessage(msgBlock: TextBlock) {
+        msgBlock.text = makeMsg("Draw")
     }
 
     /**
