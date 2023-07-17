@@ -31,6 +31,12 @@ class BoardScene : SceneBackground() {
         board.positionY(board.y + 50)       // move board a bit lower on the screen from center
         // 50 is an experimental number to move board down by, it was chosen cause it looks good
 
+        // underneath reset button, have text block that shows whose turn it is or result of game
+        val bg = roundRect(Size(200, 50), RectCorners(0))
+
+        // place msg on bg
+        val msg = textBlock(makeMsg("Turn: $turn"), align = TextAlignment.MIDDLE_CENTER)
+
         // add reset button to clear board and reset board
         val resetBtn = roundRect(size = resetBitmap.size.toFloat(), radius = RectCorners(5)) {
             name = "Reset"
@@ -49,20 +55,19 @@ class BoardScene : SceneBackground() {
 
                 // change turn back to X
                 turn = Turn.X
+
+                // update written message
+                writeTurnMessage(msg)
             }
         }
 
-        // underneath reset button, have text block that shows whose turn it is or result of game
-        val bg = roundRect(Size(200, 50), RectCorners(0)) {
-            centerXOn(resetBtn)
-            alignTopToBottomOf(resetBtn, padding = 10)
-        }
+        // position and size up bg and msg
+        bg.centerXOn(resetBtn)
+        bg.alignTopToBottomOf(resetBtn, padding = 10)
 
-        // place msg on bg
-        val msg = textBlock(makeMsg("Turn: $turn"), align = TextAlignment.MIDDLE_CENTER) {
-            width = bg.width
-            centerOn(bg)
-        }
+        msg.width = bg.width
+        msg.centerOn(bg)
+        msg.name = "msg"
 
         // setup what happens when a tile is changed
         for (tile in tiles) {
