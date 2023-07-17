@@ -31,9 +31,6 @@ class BoardScene : SceneBackground() {
         board.positionY(board.y + 50)       // move board a bit lower on the screen from center
         // 50 is an experimental number to move board down by, it was chosen cause it looks good
 
-        // a game end message, no text or size yet
-        val gameEndMsg = textBlock(makeMsg(""), align = TextAlignment.MIDDLE_CENTER)
-
         // add reset button to clear board and reset board
         val resetBtn = roundRect(size = resetBitmap.size.toFloat(), radius = RectCorners(5)) {
             name = "Reset"
@@ -44,9 +41,6 @@ class BoardScene : SceneBackground() {
             centerXOnStage()
 
             onClick {
-                // remove gameEndBlock
-                this@sceneMain -= this@sceneMain["gameEndBlock"].first
-
                 // reset board
                 BoardLogic.resetBoard()
 
@@ -69,26 +63,6 @@ class BoardScene : SceneBackground() {
             width = bg.width
             centerOn(bg)
         }
-
-        // a background for the gameEndMsg
-        val gameEndBlock = container {
-            name = "gameEndBlock"
-            // background block
-            val bgGameEnd = roundRect(Size(200, 100), RectCorners(5)) {
-                fill = Colors.DARKGREY
-
-            }
-            // edit gameEndMsg width to match bgGameEnd width
-            gameEndMsg.width = bgGameEnd.width
-
-            // place gameEndMsg on bgGameEnd
-            this += gameEndMsg
-            gameEndMsg.centerOn(bgGameEnd)
-
-            centerOn(board)
-        }
-        this -= gameEndBlock
-
 
         // setup what happens when a tile is changed
         for (tile in tiles) {
@@ -129,6 +103,8 @@ class BoardScene : SceneBackground() {
 
         BoardLogic.onGameEnd {
             // when game ends
+            // print state game passed
+            println(it.gameEnd)
 
             // draw line across 3 in a row (if it exists)
             when (BoardLogic.winLine.second) {
@@ -136,31 +112,28 @@ class BoardScene : SceneBackground() {
                     // draw win line
                     drawHorizontalWinLine(board)
                     // write win message
-                    writeWinMessage(gameEndMsg)
+                    writeWinMessage(msg)
                 }
                 WinDirection.COLUMN ->  {
                     // draw win line
                     drawVerticalWinLine(board)
                     // write win message
-                    writeWinMessage(gameEndMsg)
+                    writeWinMessage(msg)
                 }
                 WinDirection.DIAGONAL -> {
                     // draw win line
                     drawDiagonalWinLine(board)
                     // write win message
-                    writeWinMessage(gameEndMsg)
+                    writeWinMessage(msg)
                 }
                 else -> {
                     // write draw message
-                    writeDrawMessage(gameEndMsg)
+                    writeDrawMessage(msg)
                 }
             }
 
             // freeze the board as game ended
             BoardLogic.freezeBoard()
-
-            // show win message
-            this += gameEndBlock
         }
 
     }
@@ -349,5 +322,4 @@ class BoardScene : SceneBackground() {
         }
 
     }
-
 }
